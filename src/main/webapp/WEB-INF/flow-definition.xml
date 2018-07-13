@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:flow="http://www.springframework.org/schema/webflow-config"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/webflow-config
+	http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.4.xsd
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- - Luồng đi: User gửi 1 request vs url, dispatcherservlet sẽ chuyển 
+		request tới FlowHandlerMapping để xem với Url này thì thằng flow nào sẽ thực 
+		thị - FlowHandlerMapping trả về cho dispathcher kết quả, dispathcher sẽ gửi 
+		request tới FlowHandlerAdapter ( là cầu nối giữa dispahcer vs webflow) - 
+		FlowHandlerAdapter sẽ có những executor để thực thi flow, trong nó sẽ có 
+		flowRegistry ( 1 kho chứa các flow với các ID ) - lúc này executor sẽ biết 
+		flow nào thực thị và sẽ thực thi nó. -->
+
+	<!-- như là 1 kho chứa các url để cho spring biết được, dựa vào url mà người 
+		dung nhập, nó sẽ tìm kiếm trong kho này và dispatch để spring web flow Nó 
+		tương tự như @RequestMapping trong springmvc các mapping url được quản lý 
+		bởi các handlemapping -->
+	<bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping">
+		<property name="flowRegistry" ref="bookSearchFlowRegistry" />
+	</bean>
+	<!-- Nó như là 1 Spring Controller, công việc là nhận request từ Dispatcher 
+		rồi return lại view -->
+	<!-- Nó ràng buộc với một flowexecutor để thực thi request -->
+	<bean class="org.springframework.webflow.mvc.servlet.FlowHandlerAdapter">
+		<property name="flowExecutor" ref="bookSearchFlowExecutor" />
+	</bean>
+	<!-- chịu trách nhiệm thực thi dòng được định nghĩa, chứ không chịu trách 
+		nhiệm loading flow -->
+	<!-- flow-registry: tham chiếu tới 1 flow đã được định nghĩa để cho thằng 
+		executor thực thi -->
+	<flow:flow-executor id="bookSearchFlowExecutor" flow-registry="bookSearchFlowRegistry" />
+
+	<!-- load những định nghĩa, giúp nó tồn tại trong flow executor, được sử 
+		dụng bởi flow executor -->
+	<!-- flow sẽ được load từ một file định nghĩa các flow, flow định nghĩa 
+		là đường dẫn -->
+	<flow:flow-registry id="bookSearchFlowRegistry">
+		 <flow:flow-location id="bookSearchFlow" path="/WEB-INF/book-search-flow.xml" /> 
+		<flow:flow-location id="order_pizza" path="/WEB-INF/pizzaflow.xml" />
+		<flow:flow-location id="customer" path="/WEB-INF/customer.xml" />
+	</flow:flow-registry>
+
+</beans>

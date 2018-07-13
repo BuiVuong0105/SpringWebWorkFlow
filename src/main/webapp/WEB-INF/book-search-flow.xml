@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/webflow
+	http://www.springframework.org/schema/webflow/spring-webflow-2.4.xsd">
+
+<!--
+	Tao Một ModelAttribute 
+-->
+	<var name="loginBean" class="com.vuong.model.LoginBean" />
+	
+<!-- 
+	là trạng thái của view hiển thị cho người dùng. id: định danh state, 
+		view trang view sẽ đc hiển thị 
+-->
+		
+	<view-state id="displayLoginView" view="jsp/login.jsp" model="loginBean">
+		<transition on="performLogin" to="performLoginAction" />
+	</view-state>
+
+<!--
+	 là 1 trạng thái nơi mà nhiều action được thực thi, được sử dụng để 
+		gọi code trong ứng dụng 
+-->
+
+	<action-state id="performLoginAction">
+		<evaluate expression="loginService.validateUser(loginBean)" />
+		<transition on="true" to="displaySuccess" />
+		<transition on="false" to="displayError" />
+	</action-state>
+
+<!-- 
+	dựa vào giá trị của biểu thực đánh giá để quyết định trạng thái tiếp 
+		theo sẽ được thực thi. 
+-->
+
+<!--
+	 <decision-state id="performLoginAction"> 
+			<if then="displaySuccess"  else="displayError" test="loginService.checkView()" /> </decision-state> 
+			<decision-state id="checkDeliveryArea"> 
+			<if test="true" then="addCustomer" 
+			else="deliveryWarning" /> 
+		</decision-state> 
+-->
+
+<!--  
+	gửi một object loginBean vào với thẻ input, như 1 đầu vào đến flow pizza/order
+	nếu subflow kết thúc với  <end-state> mà id là orderCreated, nó sẽ chuyển đến trạng thái là payment
+-->
+	<subflow-state id="order" subflow="pizza/order">
+		<input name="loginBean" value="loginBean" />
+		<transition on="orderCreated" to="payment" />
+	</subflow-state>
+
+	<view-state id="displaySuccess" view="jsp/success.jsp"
+		model="loginBean" />
+
+	<view-state id="displayError" view="jsp/failure.jsp" />
+	
+<!-- 
+	<end-state id="customerReady" /> 
+-->
+</flow>
